@@ -78,6 +78,13 @@ describe('restrained 2D MoonStone styling', () => {
     expect(reducedMotion).toContain('transform: none !important');
   });
 
+  it('removes the glass frame around the outcomes copy', async () => {
+    const css = await readFile(cssPath, 'utf8');
+
+    expect(css).toMatch(/\.moonstone-enhanced \.outcome-grid\s*\{[^}]*background:\s*transparent[^}]*border:\s*0[^}]*backdrop-filter:\s*none/s);
+    expect(css).toMatch(/\.moonstone-enhanced \.outcome-card\s*\{[^}]*border:\s*0[^}]*background:\s*transparent[^}]*box-shadow:\s*none/s);
+  });
+
   it('keeps glass blur at ten pixels or less', async () => {
     const css = await readFile(cssPath, 'utf8');
     const blurValues = [...css.matchAll(/backdrop-filter:\s*blur\((\d+)px\)/g)]

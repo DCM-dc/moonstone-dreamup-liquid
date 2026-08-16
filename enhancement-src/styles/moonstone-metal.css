@@ -363,8 +363,7 @@ body.moonstone-enhanced {
 }
 
 .moonstone-enhanced .value-card,
-.moonstone-enhanced .process-grid article,
-.moonstone-enhanced .outcome-card {
+.moonstone-enhanced .process-grid article {
   border-color: rgba(238, 241, 244, 0.15);
   border-radius: 0;
   background: rgba(11, 13, 17, 0.54);
@@ -375,8 +374,19 @@ body.moonstone-enhanced {
   transition: transform 180ms var(--ms-ease), border-color 180ms ease, background-color 180ms ease;
 }
 
+.moonstone-enhanced .outcome-grid {
+  background: transparent;
+  border: 0;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
 .moonstone-enhanced .outcome-card {
-  background: rgba(20, 25, 120, 0.28);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .moonstone-enhanced .project-list article {
@@ -431,6 +441,15 @@ body.moonstone-enhanced {
   border-color: rgba(238, 241, 244, 0.32);
 }
 
+.moonstone-enhanced .register-fab > span:first-child {
+  display: none;
+}
+
+.moonstone-enhanced [data-moonstone-inert-registration="true"] {
+  cursor: default;
+  opacity: 1;
+}
+
 .moonstone-enhanced .register-overlay {
   background: rgba(0, 0, 0, 0.72);
 }
@@ -477,8 +496,7 @@ body.moonstone-enhanced {
 
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .moonstone-enhanced .value-card,
-  .moonstone-enhanced .process-grid article,
-  .moonstone-enhanced .outcome-card {
+  .moonstone-enhanced .process-grid article {
     background: rgba(11, 13, 17, 0.92);
   }
 
@@ -588,8 +606,7 @@ body.moonstone-enhanced {
   }
 
   .moonstone-enhanced .value-card,
-  .moonstone-enhanced .process-grid article,
-  .moonstone-enhanced .outcome-card {
+  .moonstone-enhanced .process-grid article {
     -webkit-backdrop-filter: blur(8px) saturate(106%);
     backdrop-filter: blur(8px) saturate(106%);
   }

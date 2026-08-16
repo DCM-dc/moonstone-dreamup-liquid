@@ -4,6 +4,9 @@ import { createScrollModel, sampleScroll } from './timeline.js';
 export const RESTORE_KEY = 'moonstone-webgl-restore-attempted';
 
 const MAX_FRAME_DELTA_SECONDS = 0.1;
+const REGISTRATION_BUTTON_SELECTOR = '.register-fab, .hero .button-primary, .join .button-primary';
+const REGISTRATION_LABEL = '抢先登记';
+const INERT_REGISTRATION_LABEL = '立即报名';
 
 function finiteOr(value, fallback) {
   return Number.isFinite(value) ? value : fallback;
@@ -46,6 +49,29 @@ function setReadyState(body) {
   body.classList.remove('moonstone-webgl-ready', 'moonstone-webgl-fallback');
 }
 
+function replaceRegistrationLabel(node) {
+  for (const child of node?.childNodes ?? []) {
+    if (child.nodeType === 3) {
+      const nextLabel = child.textContent
+        ?.replace(/\s*30\s*秒\s*/g, '')
+        .replace(REGISTRATION_LABEL, INERT_REGISTRATION_LABEL);
+      if (nextLabel !== child.textContent) child.textContent = nextLabel;
+      continue;
+    }
+    replaceRegistrationLabel(child);
+  }
+}
+
+function neutralizeRegistrationButtons(documentLike) {
+  const buttons = documentLike.querySelectorAll?.(REGISTRATION_BUTTON_SELECTOR) ?? [];
+  for (const button of buttons) {
+    replaceRegistrationLabel(button);
+    if (!button.disabled) button.disabled = true;
+    button.setAttribute?.('aria-disabled', 'true');
+    button.setAttribute?.('data-moonstone-inert-registration', 'true');
+  }
+}
+
 export function bootstrapMoonstone({
   windowLike = globalThis.window,
   documentLike = windowLike?.document
@@ -81,14 +107,38 @@ export function bootstrapMoonstone({
     updateScrollState();
   }
 
+  function blockRegistration(event) {
+    const button = event.target?.closest?.(REGISTRATION_BUTTON_SELECTOR);
+    if (!button) return;
+    event.preventDefault?.();
+    event.stopPropagation?.();
+    event.stopImmediatePropagation?.();
+  }
+
   setReadyState(body);
   setInitialScrollVariables(documentLike);
+  neutralizeRegistrationButtons(documentLike);
+
+  const MutationObserverLike = windowLike.MutationObserver;
+  if (typeof MutationObserverLike === 'function') {
+    const observer = new MutationObserverLike(() => neutralizeRegistrationButtons(documentLike));
+    observer.observe(body, {
+      attributes: true,
+      attributeFilter: ['disabled'],
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+    removeListeners.push(() => observer.disconnect());
+  }
 
   try {
     refreshLayout();
+    listen(documentLike, 'click', blockRegistration, true);
     listen(windowLike, 'scroll', updateScrollState, { passive: true });
     listen(windowLike, 'resize', refreshLayout, { passive: true });
     listen(windowLike, 'load', refreshLayout, { passive: true });
+    listen(windowLike, 'load', () => neutralizeRegistrationButtons(documentLike), { passive: true });
   } catch {
     sectionModel = null;
   }
