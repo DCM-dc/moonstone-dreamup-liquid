@@ -597,43 +597,52 @@ git commit -m "feat: generate deterministic cratered moonstones"
 **Files:**
 - Create: `enhancement-src/src/liquid-chrome.js`
 - Create: `enhancement-src/src/droplets.js`
+- Create: `enhancement-src/src/composition.js`
 - Create: `enhancement-src/src/world.js`
 - Create: `tests/liquid-chrome.test.js`
-- Create: `tests/world-contract.test.js`
+- Create: `tests/composition.test.js`
 
 **Interfaces:**
 - Consumes: `QUALITY`, `createMoonstoneGeometry`, `createFragmentGeometries`, `sampleScroll`, and the damped pointer value.
-- Produces: `smoothMin(a, b, k)`, `createLiquidChromeMaterial(options)`, `createDropletField(options)`, and `createMoonstoneWorld(options)` returning `{ render, resize, setScrollState, setPointer, pause, resume, dispose }`.
+- Produces: `smoothMin(a, b, k)`, `createLiquidChromeMaterial(options)`, `sampleComposition(state)`, `createDropletField(options)`, and `createMoonstoneWorld(options)` returning `{ render, resize, setScrollState, setPointer, pause, resume, dispose }`.
 
 - [ ] **Step 1: Write failing shader and world contract tests**
 
 ```js
 // tests/liquid-chrome.test.js
 import { expect, it } from 'vitest';
-import { smoothMin, liquidFragmentShader } from '../enhancement-src/src/liquid-chrome.js';
+import { smoothMin, createLiquidChromeMaterial } from '../enhancement-src/src/liquid-chrome.js';
 
-it('smoothly merges close signed distances and exposes required shader uniforms', () => {
+it('smoothly merges close signed distances', () => {
   expect(smoothMin(0.2, 0.25, 0.3)).toBeLessThan(0.2);
-  for (const name of ['uTime', 'uFlow', 'uPointer', 'uColdLight', 'uWarmLight']) {
-    expect(liquidFragmentShader).toContain(name);
-  }
-  expect(liquidFragmentShader).not.toContain('bloom');
+});
+
+it('creates a transparent material with independently mutable flow inputs', () => {
+  const material = createLiquidChromeMaterial();
+  expect(material.transparent).toBe(true);
+  expect(material.depthWrite).toBe(false);
+  material.uniforms.uTime.value = 3.5;
+  material.uniforms.uPointer.value.set(2, -1);
+  expect(material.uniforms.uTime.value).toBe(3.5);
+  expect(material.uniforms.uPointer.value.toArray()).toEqual([2, -1]);
+  material.dispose();
 });
 ```
 
 ```js
-// tests/world-contract.test.js
+// tests/composition.test.js
 import { expect, it } from 'vitest';
-import { WORLD_METHODS } from '../enhancement-src/src/world.js';
+import { sampleComposition } from '../enhancement-src/src/composition.js';
 
-it('publishes the complete lifecycle contract', () => {
-  expect(WORLD_METHODS).toEqual(['render', 'resize', 'setScrollState', 'setPointer', 'pause', 'resume', 'dispose']);
+it('moves from the section pose into the final gathered core', () => {
+  expect(sampleComposition({ activeId: 'format', gather: 0 })).toEqual({ position: [-.8, .12, -.7], scale: 1 });
+  expect(sampleComposition({ activeId: 'format', gather: 1 })).toEqual({ position: [0, 0, 0], scale: .78 });
 });
 ```
 
 - [ ] **Step 2: Run focused tests and confirm failure**
 
-Run: `npm test -- tests/liquid-chrome.test.js tests/world-contract.test.js`
+Run: `npm test -- tests/liquid-chrome.test.js tests/composition.test.js`
 
 Expected: FAIL because the material and world modules are absent.
 
@@ -757,6 +766,21 @@ export function createDropletField({ tier, groups }) {
 }
 ```
 
+Add the pure composition sampler before wiring the public world contract:
+
+```js
+// enhancement-src/src/composition.js
+const POSES = Object.freeze({
+  top: [1.5,0,0], manifesto: [.7,-.15,-.35], format: [-.8,.12,-.7], who: [.95,-.1,-.45],
+  outcomes: [-.65,.16,-.8], proof: [.85,-.2,-.55], faq: [-.9,.08,-.9], join: [0,0,0]
+});
+export function sampleComposition({ activeId, gather }) {
+  const start = POSES[activeId] ?? POSES.top;
+  const amount = Math.min(1, Math.max(0, gather));
+  return { position: start.map(value => Number((value * (1 - amount)).toFixed(4))), scale: Number((1 - amount * .22).toFixed(4)) };
+}
+```
+
 The public world contract is exact:
 
 ```js
@@ -767,8 +791,7 @@ import { createMoonstoneGeometry, createFragmentGeometries } from './moonstone-g
 import { createLiquidChromeMaterial } from './liquid-chrome.js';
 import { createDropletField } from './droplets.js';
 import { createRockMaterial } from './rock-material.js';
-
-export const WORLD_METHODS = ['render', 'resize', 'setScrollState', 'setPointer', 'pause', 'resume', 'dispose'];
+import { sampleComposition } from './composition.js';
 
 export function createMoonstoneWorld({ canvas, tier, onFirstFrame }) {
   const budget = QUALITY[tier];
@@ -798,10 +821,6 @@ export function createMoonstoneWorld({ canvas, tier, onFirstFrame }) {
   const droplets = createDropletField({ tier, groups: budget.sdfGroups });
   root.add(droplets.object);
 
-  const poses = {
-    top: [1.5, 0, 0], manifesto: [.7, -.15, -.35], format: [-.8, .12, -.7], who: [.95, -.1, -.45],
-    outcomes: [-.65, .16, -.8], proof: [.85, -.2, -.55], faq: [-.9, .08, -.9], join: [0, 0, 0]
-  };
   const poseTarget = new THREE.Vector3();
   const reflectionTarget = budget.reflectionEvery ? new THREE.WebGLCubeRenderTarget(256) : null;
   const reflectionCamera = reflectionTarget ? new THREE.CubeCamera(.1, 40, reflectionTarget) : null;
@@ -814,10 +833,10 @@ export function createMoonstoneWorld({ canvas, tier, onFirstFrame }) {
       shell.material.uniforms.uPointer.value.set(pointer.x, pointer.y);
       root.rotation.y = time * .000035 + pointer.x * Math.PI / 180;
       root.rotation.x = pointer.y * Math.PI / 180;
-      const pose = poses[scroll.activeId] ?? poses.top;
-      poseTarget.set(pose[0], pose[1], pose[2]);
+      const composition = sampleComposition(scroll);
+      poseTarget.fromArray(composition.position);
       root.position.lerp(poseTarget, .045);
-      root.scale.setScalar(THREE.MathUtils.lerp(1, .78, scroll.gather));
+      root.scale.setScalar(composition.scale);
       droplets.update(time * .001, pointer, scroll);
       if (reflectionCamera && frame++ % budget.reflectionEvery === 0) {
         shell.visible = false; reflectionCamera.update(renderer, scene); shell.visible = true;
@@ -838,7 +857,7 @@ export function createMoonstoneWorld({ canvas, tier, onFirstFrame }) {
 
 - [ ] **Step 5: Run contract tests and production build**
 
-Run: `npm test -- tests/liquid-chrome.test.js tests/world-contract.test.js`
+Run: `npm test -- tests/liquid-chrome.test.js tests/composition.test.js`
 
 Expected: PASS.
 
@@ -849,7 +868,7 @@ Expected: esbuild completes without GLSL or Three.js resolution errors and `dist
 - [ ] **Step 6: Commit the realtime world**
 
 ```bash
-git add enhancement-src/src/liquid-chrome.js enhancement-src/src/droplets.js enhancement-src/src/world.js tests/liquid-chrome.test.js tests/world-contract.test.js
+git add enhancement-src/src/liquid-chrome.js enhancement-src/src/droplets.js enhancement-src/src/composition.js enhancement-src/src/world.js tests/liquid-chrome.test.js tests/composition.test.js
 git commit -m "feat: render liquid chrome gravity archipelago"
 ```
 
@@ -858,50 +877,62 @@ git commit -m "feat: render liquid chrome gravity archipelago"
 ### Task 6: DOM Bootstrap, Crisp-Glass Restyle, and Existing-Behavior Preservation
 
 **Files:**
+- Create: `enhancement-src/src/dom-sections.js`
 - Create: `enhancement-src/src/main.js`
 - Modify: `enhancement-src/styles/moonstone-metal.css`
-- Create: `tests/main-contract.test.js`
-- Create: `tests/css-contract.test.js`
+- Create: `tests/dom-sections.test.js`
 
 **Interfaces:**
 - Consumes: quality, runtime state, timeline, pointer, and world modules.
-- Produces: body state classes `moonstone-enhanced`, `moonstone-webgl-ready`, `moonstone-webgl-fallback`, canvas `#moonstone-liquid-world`, and CSS custom properties `--ms-scroll`, `--ms-local`, `--ms-gather`.
+- Produces: `measureSections(documentLike)`, body state classes `moonstone-enhanced`, `moonstone-webgl-ready`, `moonstone-webgl-fallback`, canvas `#moonstone-liquid-world`, and CSS custom properties `--ms-scroll`, `--ms-local`, `--ms-gather`.
 
-- [ ] **Step 1: Write failing bootstrap and CSS contract tests**
+- [ ] **Step 1: Write a failing DOM-section behavior test**
 
 ```js
-// tests/main-contract.test.js
-import { readFileSync } from 'node:fs';
+// tests/dom-sections.test.js
 import { expect, it } from 'vitest';
+import { measureSections } from '../enhancement-src/src/dom-sections.js';
 
-it('targets the existing content without changing its copy', () => {
-  const source = readFileSync('enhancement-src/src/main.js', 'utf8');
-  expect(source).toContain("export const CANVAS_ID = 'moonstone-liquid-world'");
-  for (const id of ['top','manifesto','format','who','outcomes','proof','faq','join']) expect(source).toContain(`['${id}'`);
+it('measures every narrative section in document order', () => {
+  const boxes = new Map([
+    ['#top',[0,900]], ['#manifesto',[900,1000]], ['#format',[1900,1000]], ['.who',[2900,800]],
+    ['.outcomes',[3700,900]], ['#proof',[4600,1000]], ['.faq',[5600,900]], ['#join',[6500,700]]
+  ]);
+  const documentLike = { querySelector: selector => {
+    const [offsetTop, offsetHeight] = boxes.get(selector);
+    return { offsetTop, offsetHeight };
+  }};
+  expect(measureSections(documentLike).map(section => section.id)).toEqual(['top','manifesto','format','who','outcomes','proof','faq','join']);
 });
-```
 
-```js
-// tests/css-contract.test.js
-import { readFileSync } from 'node:fs';
-import { expect, it } from 'vitest';
-
-it('uses crisp glass and removes dominant glow from enhanced mode', () => {
-  const css = readFileSync('enhancement-src/styles/moonstone-metal.css', 'utf8');
-  expect(css).toContain('backdrop-filter: blur(14px)');
-  expect(css).toContain('#moonstone-liquid-world');
-  expect(css).toContain('.moonstone-webgl-ready .hero-image');
-  expect(css).not.toContain('blur(30px)');
+it('fails loudly when an expected section is missing', () => {
+  const documentLike = { querySelector: () => null };
+  expect(() => measureSections(documentLike)).toThrow('Missing MoonStone section: #top');
 });
 ```
 
 - [ ] **Step 2: Run tests and confirm failure**
 
-Run: `npm test -- tests/main-contract.test.js tests/css-contract.test.js`
+Run: `npm test -- tests/dom-sections.test.js`
 
-Expected: FAIL because `main.js` is missing and the CSS contract is unmet.
+Expected: FAIL because `dom-sections.js` is missing.
 
-- [ ] **Step 3: Implement nonblocking bootstrap and scene lifecycle**
+- [ ] **Step 3: Implement section measurement, then nonblocking bootstrap and scene lifecycle**
+
+```js
+// enhancement-src/src/dom-sections.js
+export const SECTION_TARGETS = [
+  ['top','#top'], ['manifesto','#manifesto'], ['format','#format'], ['who','.who'],
+  ['outcomes','.outcomes'], ['proof','#proof'], ['faq','.faq'], ['join','#join']
+];
+export function measureSections(documentLike) {
+  return SECTION_TARGETS.map(([id, selector]) => {
+    const node = documentLike.querySelector(selector);
+    if (!node) throw new Error(`Missing MoonStone section: ${selector}`);
+    return { id, top: node.offsetTop, height: Math.max(1, node.offsetHeight) };
+  });
+}
+```
 
 ```js
 // enhancement-src/src/main.js
@@ -910,12 +941,9 @@ import { createRuntimeState, bindContextRecovery } from './runtime-state.js';
 import { createScrollModel, sampleScroll } from './timeline.js';
 import { createDampedPointer } from './pointer.js';
 import { createMoonstoneWorld } from './world.js';
+import { measureSections } from './dom-sections.js';
 
 export const CANVAS_ID = 'moonstone-liquid-world';
-export const SECTION_TARGETS = [
-  ['top','#top'], ['manifesto','#manifesto'], ['format','#format'], ['who','.who'],
-  ['outcomes','.outcomes'], ['proof','#proof'], ['faq','.faq'], ['join','#join']
-];
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const forcedFallback = new URLSearchParams(location.search).has('forceWebglFallback');
@@ -934,10 +962,7 @@ if (!probe) {
   const pointer = createDampedPointer({ damping: .2, maxDegrees: 3 });
   let sectionModel;
   const measure = () => {
-    sectionModel = createScrollModel(SECTION_TARGETS.map(([id, selector]) => {
-      const node = document.querySelector(selector);
-      return { id, top: node.offsetTop, height: Math.max(1, node.offsetHeight) };
-    }));
+    sectionModel = createScrollModel(measureSections(document));
   };
   measure();
   const world = createMoonstoneWorld({ canvas, tier, onFirstFrame() {
@@ -1026,7 +1051,7 @@ The file must use these exact state and component rules, with responsive additio
 
 - [ ] **Step 5: Verify unit tests, build, and existing DOM hooks**
 
-Run: `npm test -- tests/main-contract.test.js tests/css-contract.test.js`
+Run: `npm test -- tests/dom-sections.test.js`
 
 Expected: PASS.
 
@@ -1039,7 +1064,7 @@ Expected: all five existing hooks remain present and the build exits zero.
 - [ ] **Step 6: Commit bootstrap and material styling**
 
 ```bash
-git add enhancement-src/src/main.js enhancement-src/styles/moonstone-metal.css tests/main-contract.test.js tests/css-contract.test.js
+git add enhancement-src/src/dom-sections.js enhancement-src/src/main.js enhancement-src/styles/moonstone-metal.css tests/dom-sections.test.js
 git commit -m "feat: integrate liquid world with MoonStone DOM"
 ```
 
