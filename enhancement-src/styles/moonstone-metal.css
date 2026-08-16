@@ -1,1 +1,668 @@
-/* MoonStone enhancement styles are added in Task 6. */
+:root {
+  --ink: #030405;
+  --ink-soft: #0a0d10;
+  --paper: #eef4f6;
+  --muted: rgba(224, 233, 237, 0.68);
+  --line: rgba(238, 244, 246, 0.16);
+  --line-strong: rgba(238, 244, 246, 0.28);
+  --blue: #8ddcff;
+  --blue-soft: #c7e6f0;
+  --orange: #ff7a4d;
+  --ms-ink: #030405;
+  --ms-graphite: #0a0d10;
+  --ms-platinum: #eef4f6;
+  --ms-gunmetal: #69747b;
+  --ms-cold: #8ddcff;
+  --ms-warm: #ff7a4d;
+  --ms-glass: rgba(16, 20, 24, 0.56);
+  --ms-scroll: 0;
+  --ms-local: 0;
+  --ms-gather: 0;
+  --ms-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ms-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ms-ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+body.moonstone-enhanced {
+  background: var(--ms-ink);
+  color: var(--ms-platinum);
+}
+
+.moonstone-enhanced::selection {
+  color: var(--ms-ink);
+  background: var(--ms-cold);
+}
+
+#moonstone-liquid-world {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 600ms var(--ms-ease-out);
+}
+
+.moonstone-webgl-ready #moonstone-liquid-world {
+  opacity: 1;
+}
+
+.moonstone-webgl-fallback #moonstone-liquid-world {
+  opacity: 0;
+  transition: none;
+}
+
+.moonstone-enhanced main,
+.moonstone-enhanced footer {
+  position: relative;
+  z-index: 1;
+}
+
+.moonstone-enhanced .hero-image {
+  visibility: visible !important;
+  opacity: 1 !important;
+  transition: opacity 550ms var(--ms-ease-out);
+}
+
+.moonstone-webgl-ready .hero-image {
+  visibility: visible !important;
+  opacity: 0 !important;
+}
+
+.moonstone-webgl-fallback .hero-image {
+  visibility: visible !important;
+  opacity: 1 !important;
+  transition: none;
+}
+
+.moonstone-enhanced .hero,
+.moonstone-enhanced .manifesto,
+.moonstone-enhanced .format,
+.moonstone-enhanced .proof,
+.moonstone-enhanced .outcomes,
+.moonstone-enhanced .faq {
+  background: rgba(3, 4, 5, 0.42);
+}
+
+.moonstone-enhanced .impact-intro {
+  background: rgba(1, 2, 4, 0.96);
+  backdrop-filter: none;
+}
+
+.moonstone-enhanced .impact-intro::before {
+  background:
+    linear-gradient(115deg, rgba(3, 4, 5, 0.08), rgba(3, 4, 5, 0.78) 72%),
+    radial-gradient(circle at 48% 46%, transparent 0 12%, rgba(3, 4, 5, 0.18) 43%, rgba(3, 4, 5, 0.92) 100%);
+}
+
+.moonstone-enhanced .intro-stars {
+  opacity: 0.6;
+  background-image:
+    radial-gradient(circle at 7% 13%, #eef4f6 0 1px, transparent 1.6px),
+    radial-gradient(circle at 22% 76%, rgba(199, 230, 240, 0.76) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 37% 26%, rgba(238, 244, 246, 0.72) 0 1.2px, transparent 1.9px),
+    radial-gradient(circle at 58% 63%, rgba(141, 220, 255, 0.44) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 72% 19%, #eef4f6 0 1px, transparent 1.5px),
+    radial-gradient(circle at 88% 82%, rgba(255, 122, 77, 0.54) 0 1.2px, transparent 2px),
+    radial-gradient(circle at 94% 36%, rgba(238, 244, 246, 0.68) 0 1px, transparent 1.5px);
+}
+
+.moonstone-enhanced .intro-nebula,
+.moonstone-enhanced .hero::before,
+.moonstone-enhanced .hero::after {
+  opacity: 0;
+  box-shadow: none;
+}
+
+.moonstone-enhanced .intro-flash {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  box-shadow: none;
+}
+
+.moonstone-enhanced .intro-impact-ring {
+  border-color: rgba(238, 244, 246, 0.34);
+  box-shadow: none;
+}
+
+.moonstone-enhanced .intro-impact-ring::before {
+  border-color: rgba(141, 220, 255, 0.2);
+}
+
+.moonstone-enhanced .intro-impact-ring::after {
+  border-color: rgba(255, 122, 77, 0.26);
+}
+
+.moonstone-enhanced .intro-dream {
+  color: var(--ms-platinum);
+  text-shadow: none;
+}
+
+.moonstone-enhanced .intro-reel-window {
+  background: linear-gradient(90deg, rgba(141, 220, 255, 0.1), transparent 78%);
+  border-color: rgba(238, 244, 246, 0.2);
+}
+
+.moonstone-enhanced .intro-reel-streak {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ms-gunmetal), var(--ms-platinum), var(--ms-cold), var(--ms-warm), transparent);
+  box-shadow: none;
+}
+
+.moonstone-enhanced .hero-shade {
+  background:
+    linear-gradient(90deg, rgba(3, 4, 5, 0.94) 0%, rgba(3, 4, 5, 0.58) 36%, rgba(3, 4, 5, 0.06) 72%),
+    linear-gradient(rgba(3, 4, 5, 0.28), transparent 34%, rgba(3, 4, 5, 0.72) 100%);
+}
+
+.moonstone-enhanced .hero-minimal h1 > span:nth-child(2),
+.moonstone-enhanced .intro-word {
+  color: transparent;
+  background: linear-gradient(
+    112deg,
+    #15191c 0%,
+    #f7ffff 18%,
+    #616d74 31%,
+    #dffaff 46%,
+    #718088 58%,
+    #ffffff 70%,
+    #252a2f 88%
+  );
+  background-size: 220% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  text-shadow: none;
+  animation: ms-specular 7.5s var(--ms-ease-in-out) infinite;
+}
+
+.moonstone-enhanced .intro-word.is-up,
+.moonstone-enhanced .hero-minimal h1 b,
+.moonstone-enhanced .section-kicker span,
+.moonstone-enhanced .value-top,
+.moonstone-enhanced .project-no,
+.moonstone-enhanced .project-arrow,
+.moonstone-enhanced .faq summary > span,
+.moonstone-enhanced .join-copy > p {
+  color: var(--ms-warm);
+  text-shadow: none;
+}
+
+.moonstone-enhanced .hero-dreamup::after {
+  -webkit-text-stroke-color: rgba(238, 244, 246, 0.28);
+}
+
+.moonstone-enhanced .section-kicker,
+.moonstone-enhanced .hero-quick-note,
+.moonstone-enhanced .manifesto-copy,
+.moonstone-enhanced .section-heading-row > p,
+.moonstone-enhanced .value-card p,
+.moonstone-enhanced .process-grid p,
+.moonstone-enhanced .project-list p,
+.moonstone-enhanced .evidence-grid span,
+.moonstone-enhanced .faq details > p,
+.moonstone-enhanced .join-meta span,
+.moonstone-enhanced .join-copy > small,
+.moonstone-enhanced footer p,
+.moonstone-enhanced footer a {
+  color: var(--muted);
+}
+
+.moonstone-enhanced .manifesto-lead h2::before {
+  border-color: rgba(141, 220, 255, 0.24);
+  box-shadow: none;
+}
+
+.moonstone-enhanced .section-heading-row h2::after,
+.moonstone-enhanced .who h2::after,
+.moonstone-enhanced .faq h2::after {
+  background: var(--ms-warm);
+  box-shadow: none;
+}
+
+.moonstone-enhanced .who h2::after {
+  background: var(--ms-cold);
+}
+
+.moonstone-enhanced .manifesto-meteor,
+.moonstone-enhanced .outcomes-meteor,
+.moonstone-enhanced .join-ink,
+.moonstone-enhanced .join-moon {
+  visibility: hidden;
+  opacity: 0;
+  filter: none;
+  box-shadow: none;
+}
+
+.moonstone-enhanced .value-grid,
+.moonstone-enhanced .process-grid,
+.moonstone-enhanced .scene-line,
+.moonstone-enhanced .evidence-grid,
+.moonstone-enhanced .faq-list,
+.moonstone-enhanced .faq details,
+.moonstone-enhanced .project-list article {
+  border-color: rgba(238, 244, 246, 0.16);
+}
+
+.moonstone-enhanced .value-card,
+.moonstone-enhanced .process-grid article,
+.moonstone-enhanced .outcome-card {
+  background: var(--ms-glass);
+  -webkit-backdrop-filter: blur(14px) saturate(125%);
+  backdrop-filter: blur(14px) saturate(125%);
+  border-color: rgba(238, 244, 246, 0.18);
+  border-radius: 0;
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.12),
+    0 20px 60px rgba(0, 0, 0, 0.18);
+  transform: translateY(0);
+  transition:
+    transform 220ms var(--ms-ease-out),
+    background-color 220ms var(--ms-ease-out),
+    border-color 220ms var(--ms-ease-out);
+}
+
+.moonstone-enhanced .process-index,
+.moonstone-enhanced .project-list small {
+  color: var(--ms-cold);
+}
+
+.moonstone-enhanced .project-list article {
+  background: transparent;
+  padding-right: 0;
+  padding-left: 0;
+  transform: translateX(0);
+  transition:
+    transform 200ms var(--ms-ease-out),
+    background-color 200ms var(--ms-ease-out),
+    border-color 200ms var(--ms-ease-out);
+}
+
+.moonstone-enhanced .who {
+  color: #090b0d;
+  background: linear-gradient(118deg, #8a9297 0%, #f5f7f7 22%, #aab1b5 47%, #f0f3f3 70%, #777f84 100%);
+}
+
+.moonstone-enhanced .who .section-kicker,
+.moonstone-enhanced .who-cards p {
+  color: rgba(9, 11, 13, 0.7);
+}
+
+.moonstone-enhanced .who .section-kicker::after,
+.moonstone-enhanced .who-cards article {
+  border-color: rgba(9, 11, 13, 0.2);
+}
+
+.moonstone-enhanced .who-cards article::after {
+  color: #a43b1d;
+}
+
+.moonstone-enhanced .outcomes {
+  color: var(--ms-platinum);
+  background: linear-gradient(135deg, rgba(11, 14, 17, 0.52), rgba(31, 36, 39, 0.38) 52%, rgba(5, 7, 9, 0.5));
+}
+
+.moonstone-enhanced .outcomes::before {
+  opacity: 0.4;
+  background-image:
+    linear-gradient(rgba(238, 244, 246, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(238, 244, 246, 0.06) 1px, transparent 1px);
+}
+
+.moonstone-enhanced .outcomes .section-kicker,
+.moonstone-enhanced .outcomes-heading p,
+.moonstone-enhanced .outcome-card p {
+  color: rgba(238, 244, 246, 0.72);
+}
+
+.moonstone-enhanced .outcomes .section-kicker span,
+.moonstone-enhanced .outcome-card > span {
+  color: #ffad91;
+}
+
+.moonstone-enhanced .outcome-grid {
+  background: transparent;
+  border-color: rgba(238, 244, 246, 0.18);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.moonstone-enhanced .faq summary i {
+  color: var(--ms-cold);
+  transition: transform 200ms var(--ms-ease-out);
+}
+
+.moonstone-enhanced .join {
+  background: rgba(3, 4, 5, 0.48);
+}
+
+.moonstone-enhanced .join::before {
+  background:
+    linear-gradient(112deg, transparent 48%, rgba(141, 220, 255, 0.08) 49%, transparent 50%),
+    linear-gradient(112deg, transparent 66%, rgba(255, 122, 77, 0.06) 67%, transparent 68%);
+}
+
+.moonstone-enhanced .join-meta span {
+  background: rgba(16, 20, 24, 0.56);
+  border-color: rgba(238, 244, 246, 0.18);
+}
+
+.moonstone-enhanced footer {
+  background: rgba(3, 4, 5, 0.88);
+  border-color: rgba(238, 244, 246, 0.16);
+}
+
+.moonstone-enhanced .lunar-deco {
+  opacity: 0.2;
+  filter: grayscale(1);
+}
+
+.moonstone-enhanced .lunar-deco-orbit,
+.moonstone-enhanced .lunar-deco-eclipse,
+.moonstone-enhanced .lunar-deco-crosshair,
+.moonstone-enhanced .lunar-deco-crater,
+.moonstone-enhanced .lunar-deco-crosshair::before {
+  border-color: rgba(238, 244, 246, 0.28);
+  box-shadow: none;
+}
+
+.moonstone-enhanced .lunar-deco-orbit::after,
+.moonstone-enhanced .lunar-deco-crosshair::after {
+  background: var(--ms-warm);
+  box-shadow: none;
+}
+
+.moonstone-enhanced .lunar-deco-eclipse {
+  background: radial-gradient(circle, rgba(105, 116, 123, 0.3), transparent 64%);
+}
+
+.moonstone-enhanced .lunar-deco-crater {
+  background:
+    radial-gradient(circle at 42% 38%, rgba(238, 244, 246, 0.08), transparent 22%),
+    radial-gradient(circle, transparent 42%, rgba(105, 116, 123, 0.2) 43% 45%, transparent 46%);
+}
+
+.moonstone-enhanced .button,
+.moonstone-enhanced .register-fab,
+.moonstone-enhanced .register-close,
+.moonstone-enhanced .register-submit {
+  transform: translateY(0) scale(1);
+  transition:
+    transform 180ms var(--ms-ease-out),
+    color 180ms var(--ms-ease-out),
+    background-color 180ms var(--ms-ease-out),
+    border-color 180ms var(--ms-ease-out);
+}
+
+.moonstone-enhanced .button-primary,
+.moonstone-enhanced .register-fab,
+.moonstone-enhanced .register-submit {
+  color: #ffffff;
+  background: #b84423;
+  border-color: #e96841;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.moonstone-enhanced .button-secondary {
+  color: var(--ms-platinum);
+  background: rgba(16, 20, 24, 0.62);
+  border-color: rgba(141, 220, 255, 0.46);
+}
+
+.moonstone-enhanced .button:active,
+.moonstone-enhanced .register-fab:active,
+.moonstone-enhanced .register-close:active,
+.moonstone-enhanced .register-submit:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 140ms;
+}
+
+.moonstone-enhanced .register-overlay {
+  background: rgba(0, 0, 0, 0.76);
+  transition:
+    opacity 220ms var(--ms-ease-out),
+    visibility 0s linear 220ms;
+}
+
+.moonstone-enhanced .register-overlay.is-open {
+  transition-delay: 0s;
+}
+
+.moonstone-enhanced .register-drawer {
+  width: min(560px, 100%);
+  max-width: 100vw;
+  min-height: 100%;
+  color: #0a0d10;
+  background: rgba(232, 237, 239, 0.92);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+  backdrop-filter: blur(14px) saturate(120%);
+  border-left: 1px solid rgba(238, 244, 246, 0.34);
+  border-radius: 0;
+  box-shadow:
+    inset 1px 0 rgba(255, 255, 255, 0.52),
+    -32px 0 90px rgba(0, 0, 0, 0.36);
+  overscroll-behavior: contain;
+  transform: translateX(100%);
+  transition: transform 260ms var(--ms-ease-drawer);
+}
+
+.moonstone-enhanced .register-overlay.is-open .register-drawer {
+  transform: translateX(0);
+}
+
+.moonstone-enhanced .register-kicker {
+  color: #33515d;
+}
+
+.moonstone-enhanced .register-intro,
+.moonstone-enhanced .register-form legend,
+.moonstone-enhanced .register-field,
+.moonstone-enhanced .register-form small {
+  color: rgba(9, 11, 13, 0.72);
+}
+
+.moonstone-enhanced .register-close {
+  color: #0a0d10;
+  background: rgba(255, 255, 255, 0.34);
+  border-color: rgba(9, 11, 13, 0.28);
+}
+
+.moonstone-enhanced .role-options {
+  background: rgba(255, 255, 255, 0.32);
+  border-color: rgba(9, 11, 13, 0.22);
+}
+
+.moonstone-enhanced .role-options label {
+  border-color: rgba(9, 11, 13, 0.22);
+  transition:
+    color 180ms var(--ms-ease-out),
+    background-color 180ms var(--ms-ease-out),
+    border-color 180ms var(--ms-ease-out);
+}
+
+.moonstone-enhanced .role-options label.is-selected {
+  color: #ffffff;
+  background: #354149;
+}
+
+.moonstone-enhanced .register-field input {
+  color: #0a0d10;
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(9, 11, 13, 0.28);
+  transition:
+    background-color 180ms var(--ms-ease-out),
+    border-color 180ms var(--ms-ease-out),
+    box-shadow 180ms var(--ms-ease-out);
+}
+
+.moonstone-enhanced .register-field input:focus {
+  background: #ffffff;
+  border-color: #237a9f;
+  box-shadow: 0 0 0 3px rgba(19, 94, 126, 0.24);
+}
+
+.moonstone-enhanced :where(a, button, input, summary):focus-visible {
+  outline: 3px solid var(--ms-cold);
+  outline-offset: 4px;
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .moonstone-enhanced .value-card,
+  .moonstone-enhanced .process-grid article,
+  .moonstone-enhanced .outcome-card {
+    background: rgba(16, 20, 24, 0.92);
+  }
+
+  .moonstone-enhanced .register-drawer {
+    background: rgba(232, 237, 239, 0.98);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .moonstone-enhanced .value-card:hover,
+  .moonstone-enhanced .process-grid article:hover,
+  .moonstone-enhanced .outcome-card:hover {
+    background: rgba(31, 38, 43, 0.7);
+    border-color: rgba(141, 220, 255, 0.34);
+    transform: translateY(-4px);
+  }
+
+  .moonstone-enhanced .project-list article:hover {
+    background: rgba(238, 244, 246, 0.04);
+    padding-right: 0;
+    padding-left: 0;
+    transform: translateX(8px);
+  }
+
+  .moonstone-enhanced .button-primary:hover,
+  .moonstone-enhanced .register-fab:hover,
+  .moonstone-enhanced .register-submit:hover {
+    background: #d65a34;
+    border-color: #ff8b63;
+    transform: translateY(-2px) scale(1);
+  }
+
+  .moonstone-enhanced .button-secondary:hover {
+    color: #ffffff;
+    background: rgba(50, 61, 67, 0.78);
+    border-color: var(--ms-cold);
+    transform: translateY(-2px) scale(1);
+  }
+
+  .moonstone-enhanced .register-close:hover {
+    color: #ffffff;
+    background: #283138;
+    transform: translateY(-1px) scale(1);
+  }
+
+  .moonstone-enhanced footer a:hover {
+    color: var(--ms-platinum);
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .moonstone-enhanced .value-card:hover,
+  .moonstone-enhanced .process-grid article:hover,
+  .moonstone-enhanced .outcome-card:hover,
+  .moonstone-enhanced .project-list article:hover,
+  .moonstone-enhanced .button-primary:hover,
+  .moonstone-enhanced .button-secondary:hover,
+  .moonstone-enhanced .register-fab:hover,
+  .moonstone-enhanced .register-close:hover,
+  .moonstone-enhanced .register-submit:hover {
+    transform: none;
+  }
+
+  .moonstone-enhanced .value-card:hover,
+  .moonstone-enhanced .process-grid article:hover,
+  .moonstone-enhanced .outcome-card:hover {
+    background: var(--ms-glass);
+  }
+
+  .moonstone-enhanced .project-list article:hover {
+    background: transparent;
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .moonstone-enhanced .button-primary:hover,
+  .moonstone-enhanced .register-fab:hover,
+  .moonstone-enhanced .register-submit:hover {
+    background: #b84423;
+    border-color: #e96841;
+  }
+
+  .moonstone-enhanced .button-secondary:hover {
+    background: rgba(16, 20, 24, 0.62);
+  }
+}
+
+@media (max-width: 1020px) {
+  .moonstone-enhanced .outcome-grid {
+    width: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .moonstone-enhanced .hero-shade {
+    background:
+      linear-gradient(90deg, rgba(3, 4, 5, 0.95), rgba(3, 4, 5, 0.26)),
+      linear-gradient(transparent 42%, rgba(3, 4, 5, 0.82));
+  }
+
+  .moonstone-enhanced .value-card,
+  .moonstone-enhanced .process-grid article,
+  .moonstone-enhanced .outcome-card {
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    backdrop-filter: blur(12px) saturate(120%);
+  }
+
+  .moonstone-enhanced .register-drawer {
+    width: 100%;
+    max-width: none;
+    padding: 54px 20px max(34px, env(safe-area-inset-bottom));
+  }
+
+  .moonstone-enhanced .register-close {
+    top: 12px;
+    right: 14px;
+  }
+
+  .moonstone-enhanced .role-options label {
+    min-width: 0;
+    padding: 0 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  .moonstone-enhanced *,
+  .moonstone-enhanced *::before,
+  .moonstone-enhanced *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+
+  #moonstone-liquid-world,
+  .moonstone-enhanced .hero-image,
+  .moonstone-enhanced .register-overlay,
+  .moonstone-enhanced .register-drawer {
+    transition: none !important;
+  }
+}
+
+@keyframes ms-specular {
+  0%,
+  100% {
+    background-position: 0 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
