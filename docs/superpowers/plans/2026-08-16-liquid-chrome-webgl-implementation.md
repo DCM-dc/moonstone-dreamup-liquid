@@ -506,10 +506,16 @@ export function mulberry32(seed) {
 ```js
 // enhancement-src/src/moonstone-geometry.js
 import * as THREE from 'three';
+import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { mulberry32 } from './random.js';
 
 export function createMoonstoneGeometry({ radius = 2, detail = 4, seed = 1, craterCount = 18 }) {
-  const geometry = new THREE.IcosahedronGeometry(radius, detail);
+  const sourceGeometry = new THREE.IcosahedronGeometry(radius, detail);
+  // Polyhedron geometry is non-indexed and carries normal/UV seams. Remove those
+  // attributes before welding so each conceptual vertex is displaced exactly once.
+  sourceGeometry.deleteAttribute('normal');
+  sourceGeometry.deleteAttribute('uv');
+  const geometry = mergeVertices(sourceGeometry);
   const random = mulberry32(seed);
   const craters = Array.from({ length: craterCount }, () => ({
     direction: new THREE.Vector3(random() * 2 - 1, random() * 2 - 1, random() * 2 - 1).normalize(),
@@ -518,9 +524,10 @@ export function createMoonstoneGeometry({ radius = 2, detail = 4, seed = 1, crat
   }));
   const position = geometry.attributes.position;
   const vertex = new THREE.Vector3();
+  const normal = new THREE.Vector3();
   for (let index = 0; index < position.count; index += 1) {
     vertex.fromBufferAttribute(position, index);
-    const normal = vertex.clone().normalize();
+    normal.copy(vertex).normalize();
     const grain = Math.sin(normal.x * 17 + seed) * Math.sin(normal.y * 23 - seed) * 0.035;
     let scale = 1 + grain + (random() - 0.5) * 0.045;
     for (const crater of craters) {

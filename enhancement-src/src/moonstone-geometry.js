@@ -1,8 +1,12 @@
 import * as THREE from 'three';
+import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { mulberry32 } from './random.js';
 
 export function createMoonstoneGeometry({ radius = 2, detail = 4, seed = 1, craterCount = 18 }) {
-  const geometry = new THREE.IcosahedronGeometry(radius, detail);
+  const sourceGeometry = new THREE.IcosahedronGeometry(radius, detail);
+  sourceGeometry.deleteAttribute('normal');
+  sourceGeometry.deleteAttribute('uv');
+  const geometry = mergeVertices(sourceGeometry);
   const random = mulberry32(seed);
   const craters = Array.from({ length: craterCount }, () => ({
     direction: new THREE.Vector3(

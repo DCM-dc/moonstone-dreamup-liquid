@@ -6,6 +6,36 @@ import {
   createMoonstoneGeometry
 } from '../enhancement-src/src/moonstone-geometry.js';
 
+function countNonManifoldEdges(geometry, tolerance = 1e-5) {
+  const position = geometry.attributes.position;
+  const indices = geometry.index
+    ? Array.from(geometry.index.array)
+    : Array.from({ length: position.count }, (_, index) => index);
+  const vertexKeys = Array.from({ length: position.count }, (_, index) => [
+    position.getX(index),
+    position.getY(index),
+    position.getZ(index)
+  ].map(value => Math.round(value / tolerance)).join(','));
+  const edgeCounts = new Map();
+
+  for (let index = 0; index < indices.length; index += 3) {
+    const triangle = indices.slice(index, index + 3).map(vertexIndex => vertexKeys[vertexIndex]);
+    for (const [first, second] of [[0, 1], [1, 2], [2, 0]]) {
+      const edge = [triangle[first], triangle[second]].sort().join('|');
+      edgeCounts.set(edge, (edgeCounts.get(edge) ?? 0) + 1);
+    }
+  }
+
+  return Array.from(edgeCounts.values()).filter(count => count !== 2).length;
+}
+
+function normalizedSilhouette(geometry) {
+  geometry.computeBoundingSphere();
+  return Array.from(geometry.attributes.position.array, value =>
+    Number((value / geometry.boundingSphere.radius).toFixed(5))
+  );
+}
+
 it('replays the Mulberry32 sequence for the same seed', () => {
   const first = mulberry32(42);
   const second = mulberry32(42);
@@ -47,6 +77,14 @@ it('produces only finite vertices and normals', () => {
   geometry.dispose();
 });
 
+it('emits a closed triangle mesh without torn shared edges', () => {
+  const geometry = createMoonstoneGeometry({ radius: 2, detail: 2, seed: 42, craterCount: 9 });
+
+  expect(countNonManifoldEdges(geometry)).toBe(0);
+
+  geometry.dispose();
+});
+
 it('creates deterministic fragments with distinct silhouettes', () => {
   const first = createFragmentGeometries({ count: 4, detail: 1, seed: 7 });
   const second = createFragmentGeometries({ count: 4, detail: 1, seed: 7 });
@@ -56,9 +94,12 @@ it('creates deterministic fragments with distinct silhouettes', () => {
     second.map(item => Array.from(item.attributes.position.array))
   );
   expect(first.every(item => item.attributes.normal.count === item.attributes.position.count)).toBe(true);
-  expect(Array.from(first[0].attributes.position.array)).not.toEqual(
-    Array.from(first[1].attributes.position.array)
-  );
+  const silhouettes = first.map(normalizedSilhouette);
+  for (let left = 0; left < silhouettes.length; left += 1) {
+    for (let right = left + 1; right < silhouettes.length; right += 1) {
+      expect(silhouettes[left]).not.toEqual(silhouettes[right]);
+    }
+  }
 
   [...first, ...second].forEach(item => item.dispose());
 });
