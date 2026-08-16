@@ -1,0 +1,21 @@
+{
+  "name": "moonstone-dreamup-enhancement",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "build": "node enhancement-src/build.mjs",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "fflate": "0.8.3",
+    "three": "0.185.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "esbuild": "0.28.2",
+    "sharp": "0.35.3",
+    "vitest": "4.1.10"
+  }
+}
