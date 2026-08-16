@@ -78,6 +78,18 @@ export function createMoonstoneWorld({ canvas, tier = 'low', onFirstFrame = () =
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.08;
+  const gl = renderer.getContext();
+  let shaderLinkFailed = false;
+  renderer.debug.onShaderError = (context, program, vertexShader, fragmentShader) => {
+    shaderLinkFailed = true;
+    const programLog = context.getProgramInfoLog(program) ?? '';
+    const vertexLog = context.getShaderInfoLog(vertexShader) ?? '';
+    const fragmentLog = context.getShaderInfoLog(fragmentShader) ?? '';
+    console.error(
+      'Moonstone WebGL shader failed to link.',
+      { programLog, vertexLog, fragmentLog }
+    );
+  };
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 80);
@@ -182,7 +194,8 @@ export function createMoonstoneWorld({ canvas, tier = 'low', onFirstFrame = () =
 
   let scroll = defaultScroll;
   const pointer = { x: 0, y: 0 };
-  let firstFrame = true;
+  let hasRenderedFrame = false;
+  let awaitingFirstValidFrame = true;
   let paused = false;
   let disposed = false;
   let renderedFrames = 0;
@@ -213,7 +226,11 @@ export function createMoonstoneWorld({ canvas, tier = 'low', onFirstFrame = () =
     sampleComposition(scroll, composition);
     poseTarget.fromArray(composition.position);
     const compositionAlpha = 1 - Math.pow(1 - 0.045, deltaSeconds * 60);
-    root.position.lerp(poseTarget, compositionAlpha);
+    if (hasRenderedFrame) {
+      root.position.lerp(poseTarget, compositionAlpha);
+    } else {
+      root.position.copy(poseTarget);
+    }
     root.scale.setScalar(composition.scale);
 
     const orbitConvergence = 1 - gather * 0.76;
@@ -245,9 +262,10 @@ export function createMoonstoneWorld({ canvas, tier = 'low', onFirstFrame = () =
     }
     renderedFrames += 1;
     renderer.render(scene, camera);
+    hasRenderedFrame = true;
 
-    if (firstFrame) {
-      firstFrame = false;
+    if (awaitingFirstValidFrame && !shaderLinkFailed && !gl.isContextLost()) {
+      awaitingFirstValidFrame = false;
       onFirstFrame();
     }
   }
