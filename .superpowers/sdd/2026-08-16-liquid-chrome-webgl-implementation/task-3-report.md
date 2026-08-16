@@ -51,4 +51,4 @@ Tests       13 passed (13)
 
 ## Commit
 
-Commit: `e8cbbf8` (`feat: map scroll and pointer input to scene state`)
+Implementation commit: `927c302` (`feat: map scroll and pointer input to scene state`).
