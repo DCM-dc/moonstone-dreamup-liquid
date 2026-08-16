@@ -7,7 +7,8 @@
     "build": "node enhancement-src/build.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "verify:rock-shader": "node enhancement-src/verify-rock-shader.mjs"
+    "verify:rock-shader": "node enhancement-src/verify-rock-shader.mjs",
+    "verify:liquid-world": "node enhancement-src/verify-liquid-world.mjs"
   },
   "dependencies": {
     "fflate": "0.8.3",
