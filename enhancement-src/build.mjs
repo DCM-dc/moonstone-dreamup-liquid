@@ -5,6 +5,33 @@ import { unzipSync } from 'fflate';
 import { build } from 'esbuild';
 import { injectEnhancement } from './build-lib.mjs';
 
+const MOONSTONE_ASSETS = Object.freeze([
+  'moonstone-faq-pebbles.webp',
+  'moonstone-hero-silver-sprout.webp',
+  'moonstone-join-arc.webp',
+  'moonstone-liquid-fragments.webp',
+  'moonstone-liquid-hero.webp',
+  'moonstone-meteor-trail.webp',
+  'moonstone-proof-link.webp',
+  'moonstone-silver-vein.webp',
+  'moonstone-who-slices.webp'
+]);
+
+const ORIGINAL_STATIC_ASSETS = Object.freeze([
+  'brand-ink-field.png',
+  'brand-ink-strip.png',
+  'favicon.svg',
+  'file.svg',
+  'globe.svg',
+  'hero-incoming-meteor.png',
+  'hero-moonstone-shanghai-sprout.png',
+  'hero-moonstone-shanghai.png',
+  'manifesto-meteor-realistic.png',
+  'moonstone-wordmark.svg',
+  'og.png',
+  'window.svg'
+]);
+
 export async function buildSite({ archivePath, outDir, rootDir }) {
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
@@ -26,9 +53,16 @@ export async function buildSite({ archivePath, outDir, rootDir }) {
   });
   await cp(path.join(rootDir, 'enhancement-src/styles/moonstone-metal.css'), path.join(outDir, 'moonstone-metal.css'));
 
+  for (const asset of MOONSTONE_ASSETS) {
+    await cp(path.join(rootDir, 'enhancement-src/assets', asset), path.join(outDir, asset));
+  }
+
   const mirror = path.join(outDir, 'moonstone-dreamup');
   await mkdir(mirror, { recursive: true });
   await cp(path.join(outDir, 'index.html'), path.join(mirror, 'index.html'));
+  for (const asset of ORIGINAL_STATIC_ASSETS) {
+    await cp(path.join(outDir, asset), path.join(mirror, asset));
+  }
 
   for (const relative of ['index.html', 'moonstone-dreamup/index.html']) {
     const file = path.join(outDir, relative);
@@ -38,6 +72,9 @@ export async function buildSite({ archivePath, outDir, rootDir }) {
 
   await cp(path.join(outDir, 'liquid-world.js'), path.join(mirror, 'liquid-world.js'));
   await cp(path.join(outDir, 'moonstone-metal.css'), path.join(mirror, 'moonstone-metal.css'));
+  for (const asset of MOONSTONE_ASSETS) {
+    await cp(path.join(outDir, asset), path.join(mirror, asset));
+  }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
