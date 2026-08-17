@@ -1,4 +1,4 @@
-name: Deploy MoonStone DreamUP
+name: Deploy MoonStone DreamUP Liquid
 
 on:
   push:
@@ -16,6 +16,8 @@ concurrency:
 
 jobs:
   deploy:
+    env:
+      SITE_BASE_PATH: /moonstone-dreamup-liquid
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { unzipSync } from 'fflate';
 import { build } from 'esbuild';
 import { injectEnhancement } from './build-lib.mjs';
+import { normalizeSiteBasePath, rewriteSiteBase } from './site-base.mjs';
 
 const MOONSTONE_ASSETS = Object.freeze([
   'moonstone-faq-pebbles.webp',
@@ -32,7 +33,13 @@ const ORIGINAL_STATIC_ASSETS = Object.freeze([
   'window.svg'
 ]);
 
-export async function buildSite({ archivePath, outDir, rootDir }) {
+export async function buildSite({
+  archivePath,
+  outDir,
+  rootDir,
+  siteBasePath = '/moonstone-dreamup',
+}) {
+  const basePath = normalizeSiteBasePath(siteBasePath);
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
   const entries = unzipSync(new Uint8Array(await readFile(archivePath)));
@@ -42,6 +49,12 @@ export async function buildSite({ archivePath, outDir, rootDir }) {
     await mkdir(path.dirname(target), { recursive: true });
     await writeFile(target, bytes);
   }
+
+  await rewriteSiteBase({
+    rootDir: outDir,
+    fromBase: '/moonstone-dreamup',
+    toBase: basePath,
+  });
 
   await build({
     entryPoints: [path.join(rootDir, 'enhancement-src/src/main.js')],
@@ -67,7 +80,7 @@ export async function buildSite({ archivePath, outDir, rootDir }) {
   for (const relative of ['index.html', 'moonstone-dreamup/index.html']) {
     const file = path.join(outDir, relative);
     const html = await readFile(file, 'utf8');
-    await writeFile(file, injectEnhancement(html, '/moonstone-dreamup'));
+    await writeFile(file, injectEnhancement(html, basePath));
   }
 
   await cp(path.join(outDir, 'liquid-world.js'), path.join(mirror, 'liquid-world.js'));
@@ -82,6 +95,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   await buildSite({
     archivePath: path.join(rootDir, 'moonstone-dreamup-github-pages-static.zip'),
     outDir: path.join(rootDir, 'dist'),
-    rootDir
+    rootDir,
+    siteBasePath: process.env.SITE_BASE_PATH ?? '/moonstone-dreamup',
   });
 }

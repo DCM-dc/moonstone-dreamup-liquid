@@ -2,6 +2,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { buildSite } from '../enhancement-src/build.mjs';
 import { normalizeSiteBasePath, rewriteSiteBase } from '../enhancement-src/site-base.mjs';
 
 describe('site base rewriting', () => {
@@ -38,3 +39,35 @@ describe('site base rewriting', () => {
     }
   });
 });
+
+it('builds the complete interactive site for the liquid repository base', async () => {
+  const outDir = await mkdtemp(path.join(tmpdir(), 'moonstone-liquid-pages-'));
+  try {
+    await buildSite({
+      archivePath: path.resolve('moonstone-dreamup-github-pages-static.zip'),
+      outDir,
+      rootDir: path.resolve('.'),
+      siteBasePath: '/moonstone-dreamup-liquid',
+    });
+
+    const rootHtml = await readFile(path.join(outDir, 'index.html'), 'utf8');
+    expect(rootHtml).toContain('href="/moonstone-dreamup-liquid/moonstone-metal.css"');
+    expect(rootHtml).toContain('src="/moonstone-dreamup-liquid/liquid-world.js"');
+    expect(rootHtml).toMatch(/<script[^>]+type="module"/);
+    expect(rootHtml).toContain('class="impact-intro"');
+    expect(rootHtml).not.toContain('moonstone-offline');
+
+    for (const relative of [
+      'index.html',
+      'index.rsc',
+      '_headers',
+      '_next/static/chunks/index-Bi_B8iQ9.js',
+      '_next/static/chunks/page-2tPo1yud.js',
+    ]) {
+      const content = await readFile(path.join(outDir, relative), 'utf8');
+      expect(content).not.toContain('/moonstone-dreamup/');
+    }
+  } finally {
+    await rm(outDir, { recursive: true, force: true });
+  }
+}, 20_000);
