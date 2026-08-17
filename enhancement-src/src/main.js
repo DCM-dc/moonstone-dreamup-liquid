@@ -107,6 +107,17 @@ export function bootstrapMoonstone({
     updateScrollState();
   }
 
+  function restoreReadyState() {
+    if (!active) return;
+    const classList = body.classList;
+    if (
+      !classList.contains('moonstone-enhanced') ||
+      !classList.contains('moonstone-2d-ready')
+    ) {
+      setReadyState(body);
+    }
+  }
+
   function blockRegistration(event) {
     const button = event.target?.closest?.(REGISTRATION_BUTTON_SELECTOR);
     if (!button) return;
@@ -121,10 +132,18 @@ export function bootstrapMoonstone({
 
   const MutationObserverLike = windowLike.MutationObserver;
   if (typeof MutationObserverLike === 'function') {
-    const observer = new MutationObserverLike(() => neutralizeRegistrationButtons(documentLike));
+    const observer = new MutationObserverLike((records) => {
+      if (!active) return;
+      neutralizeRegistrationButtons(documentLike);
+      if (records.some((record) => record.type === 'attributes'
+        && record.attributeName === 'class'
+        && record.target === body)) {
+        restoreReadyState();
+      }
+    });
     observer.observe(body, {
       attributes: true,
-      attributeFilter: ['disabled'],
+      attributeFilter: ['class', 'disabled'],
       childList: true,
       subtree: true,
       characterData: true

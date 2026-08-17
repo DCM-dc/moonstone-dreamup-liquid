@@ -84,4 +84,43 @@ describe('flat MoonStone runtime', () => {
     expect(handle.isActive()).toBe(false);
     expect(windowLike.listenerCount('scroll')).toBe(0);
   });
+
+  it('restores ready classes after hydration only while active', () => {
+    const classList = createClassList();
+    let mutationCallback;
+    const body = { classList };
+    const windowLike = {
+      ...createWindowTarget(),
+      scrollY: 0,
+      MutationObserver: class {
+        constructor(callback) {
+          mutationCallback = callback;
+        }
+
+        observe() {}
+        disconnect() {}
+      }
+    };
+    const documentLike = {
+      body,
+      documentElement: { style: { setProperty() {} } },
+      querySelector() { return null; }
+    };
+    windowLike.document = documentLike;
+
+    const handle = bootstrapMoonstone({ windowLike, documentLike });
+
+    classList.remove('moonstone-enhanced', 'moonstone-2d-ready');
+    mutationCallback([{ type: 'attributes', attributeName: 'class', target: body }]);
+
+    expect(classList.contains('moonstone-enhanced')).toBe(true);
+    expect(classList.contains('moonstone-2d-ready')).toBe(true);
+
+    handle.destroy();
+    classList.remove('moonstone-enhanced', 'moonstone-2d-ready');
+    mutationCallback([{ type: 'attributes', attributeName: 'class', target: body }]);
+
+    expect(classList.contains('moonstone-enhanced')).toBe(false);
+    expect(classList.contains('moonstone-2d-ready')).toBe(false);
+  });
 });
