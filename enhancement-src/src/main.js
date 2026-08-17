@@ -72,6 +72,19 @@ function neutralizeRegistrationButtons(documentLike) {
   }
 }
 
+function blockRegistration(event) {
+  const button = event.target?.closest?.(REGISTRATION_BUTTON_SELECTOR);
+  if (!button) return;
+  event.preventDefault?.();
+  event.stopPropagation?.();
+  event.stopImmediatePropagation?.();
+}
+
+function installRegistrationBlocker(documentLike) {
+  documentLike.addEventListener?.('click', blockRegistration, true);
+  return () => documentLike.removeEventListener?.('click', blockRegistration, true);
+}
+
 export function bootstrapMoonstone({
   windowLike = globalThis.window,
   documentLike = windowLike?.document
@@ -116,14 +129,6 @@ export function bootstrapMoonstone({
     ) {
       setReadyState(body);
     }
-  }
-
-  function blockRegistration(event) {
-    const button = event.target?.closest?.(REGISTRATION_BUTTON_SELECTOR);
-    if (!button) return;
-    event.preventDefault?.();
-    event.stopPropagation?.();
-    event.stopImmediatePropagation?.();
   }
 
   setReadyState(body);
@@ -174,6 +179,48 @@ export function bootstrapMoonstone({
   });
 }
 
+export function scheduleMoonstoneBootstrap({
+  windowLike = globalThis.window,
+  documentLike = windowLike?.document
+} = {}) {
+  if (!windowLike || !documentLike?.body) return createInertHandle();
+
+  let active = true;
+  let handle = null;
+  let removeEarlyBlocker = () => {};
+
+  function start() {
+    if (!active || handle) return;
+    handle = bootstrapMoonstone({ windowLike, documentLike });
+  }
+
+  function onLoad() {
+    windowLike.removeEventListener?.('load', onLoad);
+    removeEarlyBlocker();
+    start();
+  }
+
+  if (documentLike.readyState === 'complete') {
+    start();
+  } else {
+    removeEarlyBlocker = installRegistrationBlocker(documentLike);
+    windowLike.addEventListener?.('load', onLoad, { once: true });
+  }
+
+  return Object.freeze({
+    destroy() {
+      if (!active) return;
+      active = false;
+      windowLike.removeEventListener?.('load', onLoad);
+      removeEarlyBlocker();
+      handle?.destroy();
+    },
+    isActive() {
+      return active && Boolean(handle?.isActive());
+    }
+  });
+}
+
 if (typeof window !== 'undefined' && window.document?.body) {
-  bootstrapMoonstone({ windowLike: window, documentLike: window.document });
+  scheduleMoonstoneBootstrap({ windowLike: window, documentLike: window.document });
 }
